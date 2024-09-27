@@ -18,6 +18,7 @@ class ExpressionOptimizer:
         return tokens
 
     def _division_by_zero_check(self):
+        self._division_by_zero_indicators = ""
         for token_i, token in enumerate(self.tokens):
             if re.match(r"0+\.?0+|0", token) and self.tokens[token_i - 1] == "/":
                 self._division_by_zero_indicators = self._division_by_zero_indicators[:-1] + "^" * (len(token) + 1)
@@ -177,6 +178,9 @@ class ExpressionOptimizer:
                             new_tokens[-2] = new_tokens[-2][1:]
                         new_tokens.pop(-3)
                         new_tokens.pop()
+                    elif new_tokens[-4] == "(":
+                        new_tokens.pop(-3)
+                        new_tokens.pop()
             token_i += 1
 
         self.tokens = new_tokens
@@ -195,12 +199,20 @@ class ExpressionOptimizer:
                     self._multiplication_and_division_optimizer()
                     self._addition_and_subtraction_optimizer()
                     self._brackets_optimizer()
+                    self._division_by_zero_check()
+                    if not self._expression_status:
+                        break
                 print()
                 new_expression = "".join(self.tokens)
-                if new_expression == self.expression:
-                    print(f"Can't provide optimizations to this expression:\n{self.expression}")
+                if not self._expression_status:
+                    print("Division by zero after some optimizations at positions:", new_expression, self._division_by_zero_indicators,
+                          sep="\n")
+                    print("Expression is incorrect")
                 else:
-                    print(f"Optimized expression:\n{new_expression}")
+                    if new_expression == self.expression:
+                        print(f"Can't provide optimizations to this expression:\n{self.expression}")
+                    else:
+                        print(f"Optimized expression:\n{new_expression}")
         else:
             print("Expression is incorrect")
 
@@ -365,6 +377,8 @@ if __name__ == "__main__":
     0*(10/1)+(1.618+0)+(5-3)/1-(0+7*2.71)
     a*(b+c)/d+e/(f+(g*h))
     """
-    expression = "a*(b/0+c)/0+e/(f+(g*h)/0)/0"
+    expression = "a*(0/b+c)/d*0+e/(0/f+(g*0/h))+0/(a+c)+a*0"
+    print(f"Expression:\n{expression}")
+    print()
     expression_optimizer = ExpressionOptimizer(expression)
     expression_optimizer.print_tree()
