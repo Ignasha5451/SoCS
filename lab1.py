@@ -81,13 +81,13 @@ class ExpressionValidator:
 
     def _constant_check(self, char):
         if re.match(r"[0-9]", char) is not None:
-            pass
+            self._point = False
         elif char == "." and not self._point:
             self._point = True
-        elif char in "+-*/":
+        elif char in "+-*/" and not self._point:
             self._state = "operator"
             self._point = False
-        elif char == ")":
+        elif char == ")" and not self._point:
             if self._bracket_deep > 0:
                 self._state = "close_bracket"
                 self._point = False
