@@ -205,7 +205,8 @@ class ExpressionOptimizer:
                 print()
                 new_expression = "".join(self.tokens)
                 if not self._expression_status:
-                    print("Division by zero after some optimizations at positions:", new_expression, self._division_by_zero_indicators,
+                    print("Division by zero after some optimizations at positions:", new_expression,
+                          self._division_by_zero_indicators,
                           sep="\n")
                     print("Expression is incorrect")
                 else:
@@ -214,6 +215,7 @@ class ExpressionOptimizer:
                     else:
                         print(f"Optimized expression:\n{new_expression}")
         else:
+            self._expression_status = False
             print("Expression is incorrect")
 
     def _building_tree_list(self):
@@ -377,7 +379,7 @@ if __name__ == "__main__":
     0*(10/1)+(1.618+0)+(5-3)/1-(0+7*2.71)
     a*(b+c)/d+e/(f+(g*h))
     """
-    expression = "a*(0/b+c)/d*0+e/(0/f+(g*0/h))+0/(a+c)+a*0"
+    expression = "a*(b+c)/d+e/(f+(g*h))*i-j/(k*6(l-m)-n)"
     print(f"Expression:\n{expression}")
     print()
     expression_optimizer = ExpressionOptimizer(expression)
