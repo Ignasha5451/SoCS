@@ -206,115 +206,116 @@ class ExpressionOptimizer:
 
     def _building_tree_list(self):
         self.optimizer()
-        tokens_for_tree = self.tokens[:]
-        while len(tokens_for_tree) > 3:
-            token_i = 0
-            while token_i < len(tokens_for_tree):
-                if token_i < 2:
-                    if (tokens_for_tree[token_i] == "/" and
-                            tokens_for_tree[token_i + 1] != "("):
-                        tokens_for_tree = ([[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
-                                           tokens_for_tree[token_i + 2:])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "*" and
-                          tokens_for_tree[token_i + 1] != "("):
-                        tokens_for_tree = ([[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
-                                           tokens_for_tree[token_i + 2:])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "-" and
-                          tokens_for_tree[token_i + 1] != "(" and
-                          tokens_for_tree[token_i + 2] not in ["*", "/"]):
-                        tokens_for_tree = ([[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
-                                           tokens_for_tree[token_i + 2:])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "+" and
-                          tokens_for_tree[token_i + 1] != "(" and
-                          tokens_for_tree[token_i + 2] not in ["*", "/"]):
-                        tokens_for_tree = ([[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
-                                           tokens_for_tree[token_i + 2:])
-                        token_i += 1
-                elif token_i > len(tokens_for_tree) - 3:
-                    if (tokens_for_tree[token_i] == "/" and
-                            tokens_for_tree[token_i - 1] != ")" and
-                            tokens_for_tree[token_i - 2] != "/"):
-                        tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                           [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "*" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i - 2] != "/"):
-                        tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                           [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "-" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i - 2] not in ["-", "*", "/"]):
-                        tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                           [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]])
-                        token_i += 1
-                    elif (tokens_for_tree[token_i] == "+" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i - 2] not in ["-", "*", "/"]):
-                        tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                           [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]])
-                        token_i += 1
-                else:
-                    if (tokens_for_tree[token_i] == "/" and
-                            tokens_for_tree[token_i - 1] != ")" and
-                            tokens_for_tree[token_i + 1] != "(" and
-                            tokens_for_tree[token_i - 2] != "/"):
-                        if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
-                            tokens_for_tree = (tokens_for_tree[:token_i - 2] +
-                                               [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
-                                               tokens_for_tree[token_i + 3:])
-                        else:
-                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                               [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
+        if self._expression_status:
+            tokens_for_tree = self.tokens[:]
+            while len(tokens_for_tree) > 3:
+                token_i = 0
+                while token_i < len(tokens_for_tree):
+                    if token_i < 2:
+                        if (tokens_for_tree[token_i] == "/" and
+                                tokens_for_tree[token_i + 1] != "("):
+                            tokens_for_tree = ([[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
                                                tokens_for_tree[token_i + 2:])
                             token_i += 1
-                    elif (tokens_for_tree[token_i] == "*" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i + 1] != "(" and
-                          tokens_for_tree[token_i - 2] != "/"):
-                        if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
-                            tokens_for_tree = (tokens_for_tree[:token_i - 2] +
-                                               [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
-                                               tokens_for_tree[token_i + 3:])
-                        else:
-                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                               [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
+                        elif (tokens_for_tree[token_i] == "*" and
+                              tokens_for_tree[token_i + 1] != "("):
+                            tokens_for_tree = ([[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
                                                tokens_for_tree[token_i + 2:])
                             token_i += 1
-                    elif (tokens_for_tree[token_i] == "-" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i + 1] != "(" and
-                          tokens_for_tree[token_i - 2] not in ["-", "*", "/"] and
-                          tokens_for_tree[token_i + 2] not in ["*", "/"]):
-                        if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
-                            tokens_for_tree = (tokens_for_tree[:token_i - 2] +
-                                               [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
-                                               tokens_for_tree[token_i + 3:])
-                        else:
-                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                               [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
+                        elif (tokens_for_tree[token_i] == "-" and
+                              tokens_for_tree[token_i + 1] != "(" and
+                              tokens_for_tree[token_i + 2] not in ["*", "/"]):
+                            tokens_for_tree = ([[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
                                                tokens_for_tree[token_i + 2:])
                             token_i += 1
-                    elif (tokens_for_tree[token_i] == "+" and
-                          tokens_for_tree[token_i - 1] != ")" and
-                          tokens_for_tree[token_i + 1] != "(" and
-                          tokens_for_tree[token_i - 2] not in ["-", "*", "/"] and
-                          tokens_for_tree[token_i + 2] not in ["*", "/"]):
-                        if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
-                            tokens_for_tree = (tokens_for_tree[:token_i - 2] +
-                                               [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
-                                               tokens_for_tree[token_i + 3:])
-                        else:
-                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
-                                               [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
+                        elif (tokens_for_tree[token_i] == "+" and
+                              tokens_for_tree[token_i + 1] != "(" and
+                              tokens_for_tree[token_i + 2] not in ["*", "/"]):
+                            tokens_for_tree = ([[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
                                                tokens_for_tree[token_i + 2:])
                             token_i += 1
-                token_i += 1
-        return tokens_for_tree
+                    elif token_i > len(tokens_for_tree) - 3:
+                        if (tokens_for_tree[token_i] == "/" and
+                                tokens_for_tree[token_i - 1] != ")" and
+                                tokens_for_tree[token_i - 2] != "/"):
+                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                               [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]])
+                            token_i += 1
+                        elif (tokens_for_tree[token_i] == "*" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i - 2] != "/"):
+                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                               [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]])
+                            token_i += 1
+                        elif (tokens_for_tree[token_i] == "-" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i - 2] not in ["-", "*", "/"]):
+                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                               [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]])
+                            token_i += 1
+                        elif (tokens_for_tree[token_i] == "+" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i - 2] not in ["-", "*", "/"]):
+                            tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                               [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]])
+                            token_i += 1
+                    else:
+                        if (tokens_for_tree[token_i] == "/" and
+                                tokens_for_tree[token_i - 1] != ")" and
+                                tokens_for_tree[token_i + 1] != "(" and
+                                tokens_for_tree[token_i - 2] != "/"):
+                            if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
+                                tokens_for_tree = (tokens_for_tree[:token_i - 2] +
+                                                   [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 3:])
+                            else:
+                                tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                                   [[tokens_for_tree[token_i - 1], "/", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 2:])
+                                token_i += 1
+                        elif (tokens_for_tree[token_i] == "*" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i + 1] != "(" and
+                              tokens_for_tree[token_i - 2] != "/"):
+                            if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
+                                tokens_for_tree = (tokens_for_tree[:token_i - 2] +
+                                                   [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 3:])
+                            else:
+                                tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                                   [[tokens_for_tree[token_i - 1], "*", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 2:])
+                                token_i += 1
+                        elif (tokens_for_tree[token_i] == "-" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i + 1] != "(" and
+                              tokens_for_tree[token_i - 2] not in ["-", "*", "/"] and
+                              tokens_for_tree[token_i + 2] not in ["*", "/"]):
+                            if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
+                                tokens_for_tree = (tokens_for_tree[:token_i - 2] +
+                                                   [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 3:])
+                            else:
+                                tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                                   [[tokens_for_tree[token_i - 1], "-", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 2:])
+                                token_i += 1
+                        elif (tokens_for_tree[token_i] == "+" and
+                              tokens_for_tree[token_i - 1] != ")" and
+                              tokens_for_tree[token_i + 1] != "(" and
+                              tokens_for_tree[token_i - 2] not in ["-", "*", "/"] and
+                              tokens_for_tree[token_i + 2] not in ["*", "/"]):
+                            if tokens_for_tree[token_i + 2] == ")" and tokens_for_tree[token_i - 2] == "(":
+                                tokens_for_tree = (tokens_for_tree[:token_i - 2] +
+                                                   [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 3:])
+                            else:
+                                tokens_for_tree = (tokens_for_tree[:token_i - 1] +
+                                                   [[tokens_for_tree[token_i - 1], "+", tokens_for_tree[token_i + 1]]] +
+                                                   tokens_for_tree[token_i + 2:])
+                                token_i += 1
+                    token_i += 1
+            return tokens_for_tree
 
     def building_tree(self):
         tokens_for_tree = self._building_tree_list()
@@ -329,7 +330,8 @@ class ExpressionOptimizer:
                 root.right = building_tree_helper(root.right.value)
             return root
 
-        return building_tree_helper(tokens_for_tree)
+        if self._expression_status:
+            return building_tree_helper(tokens_for_tree)
 
     def print_tree(self):
         my_root = self.building_tree()
@@ -342,9 +344,10 @@ class ExpressionOptimizer:
                 root.right = print_tree_helper(my_root.right)
             return root
 
-        print()
-        print("Expression tree:")
-        print(print_tree_helper(my_root))
+        if self._expression_status:
+            print()
+            print("Expression tree:")
+            print(print_tree_helper(my_root))
 
 
 class MyNode:
@@ -360,7 +363,8 @@ if __name__ == "__main__":
     1*2/a+1+2-(1*c/1*1+1+0-2+0)+cos()-sin(1+2)*tg(0-1+a*1)
     0*c+1*a*1+1*5/2*3*1/3+3*21+0*(a+b+0*c)/1*0+(4*5)
     0*(10/1)+(1.618+0)+(5-3)/1-(0+7*2.71)
+    a*(b+c)/d+e/(f+(g*h))
     """
-    expression = "1*2/a+1+2-(1*c/1*1+1+0-2+0)-(1+2)*(0-1+a*1)"
+    expression = "a*(b/0+c)/0+e/(f+(g*h)/0)/0"
     expression_optimizer = ExpressionOptimizer(expression)
     expression_optimizer.print_tree()
