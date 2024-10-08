@@ -39,34 +39,66 @@ class ExpressionOptimizer:
                 elif (self.tokens[token_i] in "+-" and
                       re.match(r"-?\d+\.\d+|-?\d+", new_tokens[-2]) and
                       re.match(r"-?\d+\.\d+|-?\d+", self.tokens[token_i + 1])):
-                    try:
-                        if new_tokens[-3] not in "/*" and self.tokens[token_i + 2] not in "/*":
+                    if len(new_tokens) > 2:
+                        try:
+                            if new_tokens[-3] not in "/*" and self.tokens[token_i + 2] not in "/*":
+                                self._need_optimize = True
+                                if new_tokens[-3] == "-":
+                                    val = eval(f"-{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
+                                    if val <= 0:
+                                        new_tokens.append(str(val)[1:])
+                                    elif val > 0:
+                                        new_tokens.pop()
+                                        new_tokens.append("+")
+                                        new_tokens.append(str(val))
+                                elif new_tokens[-3] == "+":
+                                    val = eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
+                                    if val < 0:
+                                        new_tokens.pop()
+                                        new_tokens.append("-")
+                                        new_tokens.append(str(val)[1:])
+                                    elif val >= 0:
+                                        new_tokens.append(str(val))
+                                else:
+                                    new_tokens.append(
+                                        str(eval(
+                                            f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
+                                token_i += 1
+                        except IndexError:
                             self._need_optimize = True
-                            if new_tokens[-3] == "-":
-                                val = eval(f"-{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
-                                if val <= 0:
-                                    new_tokens.append(str(val)[1:])
-                                elif val > 0:
-                                    new_tokens.pop()
-                                    new_tokens.append("+")
-                                    new_tokens.append(str(val))
-                            elif new_tokens[-3] == "+":
-                                val = eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
-                                if val < 0:
-                                    new_tokens.pop()
-                                    new_tokens.append("-")
-                                    new_tokens.append(str(val)[1:])
-                                elif val >= 0:
-                                    new_tokens.append(str(val))
-                            else:
-                                new_tokens.append(
-                                    str(eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
+                            new_tokens.append(
+                                str(eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
                             token_i += 1
-                    except IndexError:
-                        self._need_optimize = True
-                        new_tokens.append(
-                            str(eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
-                        token_i += 1
+                    else:
+                        try:
+                            if self.tokens[token_i + 2] not in "/*":
+                                self._need_optimize = True
+                                if new_tokens[-3] == "-":
+                                    val = eval(f"-{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
+                                    if val <= 0:
+                                        new_tokens.append(str(val)[1:])
+                                    elif val > 0:
+                                        new_tokens.pop()
+                                        new_tokens.append("+")
+                                        new_tokens.append(str(val))
+                                elif new_tokens[-3] == "+":
+                                    val = eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")
+                                    if val < 0:
+                                        new_tokens.pop()
+                                        new_tokens.append("-")
+                                        new_tokens.append(str(val)[1:])
+                                    elif val >= 0:
+                                        new_tokens.append(str(val))
+                                else:
+                                    new_tokens.append(
+                                        str(eval(
+                                            f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
+                                token_i += 1
+                        except IndexError:
+                            self._need_optimize = True
+                            new_tokens.append(
+                                str(eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
+                            token_i += 1
                 elif self.tokens[token_i] == "+" and new_tokens[-2] == "0":
                     self._need_optimize = True
                     new_tokens.pop()
@@ -185,6 +217,37 @@ class ExpressionOptimizer:
 
         self.tokens = new_tokens
 
+    def _division_in_a_row_optimizer(self):
+        new_tokens = []
+        token_i = 0
+        while token_i < len(self.tokens):
+            new_tokens.append(self.tokens[token_i])
+            if self.tokens[token_i] == "/":
+                if token_i < len(self.tokens) - 2 and self.tokens[token_i + 2] == "/":
+                    new_tokens.extend(["(", self.tokens[token_i + 1], "*", self.tokens[token_i + 3], ")"])
+                    token_i += 3
+            token_i += 1
+        self.tokens = new_tokens
+
+    def _subtraction_in_a_row_optimizer(self):
+        new_tokens = []
+        token_i = 0
+        while token_i < len(self.tokens):
+            new_tokens.append(self.tokens[token_i])
+            if self.tokens[token_i] == "-":
+                if token_i < len(self.tokens) - 4:
+                    if (re.match(r"\d+\.\d+|\d+|[a-zA-Z_][a-zA-Z0-9_]*", self.tokens[token_i + 1]) and
+                            self.tokens[token_i + 2] == "-" and self.tokens[token_i + 4] not in "*/"):
+                        new_tokens.extend(["(", self.tokens[token_i + 1], "+", self.tokens[token_i + 3], ")"])
+                        token_i += 3
+                elif token_i < len(self.tokens) - 2:
+                    if (re.match(r"\d+\.\d+|\d+|[a-zA-Z_][a-zA-Z0-9_]*", self.tokens[token_i + 1]) and
+                            self.tokens[token_i + 2] == "-"):
+                        new_tokens.extend(["(", self.tokens[token_i + 1], "+", self.tokens[token_i + 3], ")"])
+                        token_i += 3
+            token_i += 1
+        self.tokens = new_tokens
+
     def optimizer(self):
         expression_validator = ExpressionValidator()
         if expression_validator.validation(expression):
@@ -202,6 +265,8 @@ class ExpressionOptimizer:
                     self._division_by_zero_check()
                     if not self._expression_status:
                         break
+                self._division_in_a_row_optimizer()
+                self._subtraction_in_a_row_optimizer()
                 print()
                 new_expression = "".join(self.tokens)
                 if not self._expression_status:
@@ -221,7 +286,18 @@ class ExpressionOptimizer:
     def _building_tree_list(self):
         self.optimizer()
         if self._expression_status:
-            tokens_for_tree = self.tokens[:]
+            tokens_for_tree = []
+            token_i = 0
+            while token_i < len(self.tokens):
+                tokens_for_tree.append(self.tokens[token_i])
+                if self.tokens[token_i] == "-":
+                    if token_i == 0 or self.tokens[token_i - 1] == "(":
+                        if re.match(r"\d+\.\d+|\d+|[a-zA-Z_][a-zA-Z0-9_]*", self.tokens[token_i + 1]):
+                            tokens_for_tree[-1] = f"-{self.tokens[token_i + 1]}"
+                            token_i += 1
+                        elif self.tokens[token_i + 1] == "(":
+                            tokens_for_tree.insert(-1, "0")
+                token_i += 1
             while len(tokens_for_tree) > 3:
                 token_i = 0
                 while token_i < len(tokens_for_tree):
@@ -378,8 +454,15 @@ if __name__ == "__main__":
     0*c+1*a*1+1*5/2*3*1/3+3*21+0*(a+b+0*c)/1*0+(4*5)
     0*(10/1)+(1.618+0)+(5-3)/1-(0+7*2.71)
     a*(b+c)/d+e/(f+(g*h))
+    
+    a*(b+(c+d)/e)+b*0+5+4-1*n
+    0+b*0+0*a+a*b+1
+    
+    2+3+4+5+6+7+8*s-p
+    0/b/c/v/d/e/g*t-v-b-d-s-e-g
+    -a+(-v+p*(6-h+b*(d+u+5+10)))
     """
-    expression = "a*(b+c)/d+e/(f+(g*h))*i-j/(k*6(l-m)-n)"
+    expression = "-(a+b)*(-c+d)-e-f+(-g-h-i-j)"
     print(f"Expression:\n{expression}")
     print()
     expression_optimizer = ExpressionOptimizer(expression)
