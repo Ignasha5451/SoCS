@@ -24,6 +24,9 @@ class VariableNameError(ExpressionSyntaxError):
 class UnsupportedSymbolError(ExpressionSyntaxError):
     pass
 
+class ExpressionEndError(ExpressionSyntaxError):
+    pass
+
 
 class ExpressionValidator:
     def __init__(self):
@@ -157,6 +160,8 @@ class ExpressionValidator:
         try:
             if self._bracket_deep:
                 raise BracketOrderError("Not all open brackets are closed")
+            if self._state not in ("variable", "constant", "close_bracket"):
+                raise ExpressionEndError(f"Expression can't end by this symbol: {expression[-1]}")
         except Exception as e:
             self._expression_status = False
             print(e)
