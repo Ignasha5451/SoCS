@@ -36,8 +36,9 @@ class ExpressionOptimizer:
         while token_i < len(self.tokens):
             new_tokens.append(self.tokens[token_i])
             if token_i != 0:
-                if self.tokens[token_i] == "-" and new_tokens[-2] == "(" and re.match(r"-?\d+\.\d+|-?\d+",
-                                                                                      self.tokens[token_i + 1]):
+                if self.tokens[token_i] == "-" and new_tokens[-2] == "(" and re.match(
+                        r"-?\d+\.\d+|-?\d+|[a-zA-Z_][a-zA-Z0-9_]*",
+                        self.tokens[token_i + 1]):
                     new_tokens[-1] += self.tokens[token_i + 1]
                     token_i += 1
                 elif (self.tokens[token_i] in "+-" and
@@ -134,11 +135,11 @@ class ExpressionOptimizer:
                 self._need_optimize = True
                 new_tokens.append(str(eval(f"{new_tokens.pop(-2)}{new_tokens.pop(-1)}{self.tokens[token_i + 1]}")))
                 token_i += 1
-            elif self.tokens[token_i] in "*/" and self.tokens[token_i + 1] == "1":
+            elif self.tokens[token_i] in "*/" and re.match(r"1\.0+|1", self.tokens[token_i + 1]):
                 self._need_optimize = True
                 new_tokens.pop()
                 token_i += 1
-            elif self.tokens[token_i] == "*" and new_tokens[-2] == "1":
+            elif self.tokens[token_i] == "*" and re.match(r"1\.0+|1", new_tokens[-2]):
                 self._need_optimize = True
                 new_tokens.pop()
                 new_tokens.pop()
