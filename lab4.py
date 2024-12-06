@@ -177,10 +177,17 @@ class AssociativeTransformer:
     def expression_forms(self):
         print()
         print("Expressions forms:")
+
+        expression_forms = []
+
         for group_i, expression_forms_group in enumerate(self.expression_transformer(), start=1):
             for form_i, expression_form in enumerate(expression_forms_group, start=1):
-                print(f"{group_i}.{form_i}.\t{self._expression_string_builder(expression_form)}")
+                expression_string = self._expression_string_builder(expression_form)
+                expression_forms.append(expression_string)
+                print(f"{group_i}.{form_i}.\t{expression_string}")
             print()
+
+        return expression_forms[1:]
 
 
 if __name__ == "__main__":
@@ -195,6 +202,11 @@ if __name__ == "__main__":
     (a*b+a/c)*a+(a*b+a/c)*b
     (a*b/1+0*f+a/c)*a+(a*b+a/c)*0+(0+a*b+a/c*1)*b
     (a+(b*c+c))*a*c-(a+(b*c+c))*b*a+(a+(b*c+c))*c*b
+    
+    v/(c3+f9)+v/(-q1+3)-v/(f1+3-5)
+    a*(c+d+a*(b-c))
+    a*b+a*c-a*d
+    v*g-+d*q-v*q+d*p*d
     """
     expression = "(a*b/1+0*f+a/c)*a+(a*b+a/c)*0+(0+a*b+a/c*1)*b"
     print(f"Expression:\n{expression}")

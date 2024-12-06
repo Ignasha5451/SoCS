@@ -113,8 +113,13 @@ class DistributiveTransformator:
     def expression_forms(self):
         print()
         print("Expression forms:")
-        for form_i, expression_form in enumerate(self.expression_transformer(), start=1):
-            print(f"{form_i}.\t{self._expression_string_builder(expression_form)}")
+
+        expression_forms = list(map(self._expression_string_builder, self.expression_transformer()))
+
+        for form_i, expression_form in enumerate(expression_forms, start=1):
+            print(f"{form_i}.\t{expression_form}")
+
+        return expression_forms[1:]
 
 
 if __name__ == "__main__":
@@ -145,6 +150,12 @@ if __name__ == "__main__":
     (1-d)/(a+b-2)/e
     a-b*(k-t)-(f-g)*(f*5.9-q)-(f+g)/(d+q-w)
     a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)
+    
+    a*(c+d+e+f)+a*(b-g-a-q)-a*(5+3+2)
+    v/(c3+f9)+v/(-q1+3)-v/(f1+3-5)
+    a*(c+d+a*(b-c))
+    a*b+a*c-a*d
+    v*g-+d*q-v*q+d*p*d
     """
     expression = "a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)"
     print(f"Expression:\n{expression}")
